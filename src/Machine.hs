@@ -52,26 +52,17 @@ guardArity f = do
     then return ()
     else throwError $ ArityException f (arity f)
 
--- | Take the top element of the stack and return it.
-pop :: Machine Integer
-pop = do
+-- | Take the top (arity f) elements of the stack and return them.
+popf :: Function -> Machine [Integer]
+popf f = do
+    let ar = arity f
     (stack, size, rng) <- get
-    case stack of []    -> error "[FATAL] Tried to pop from empty stack!"
-                  (a:s) -> put (s, size-1, rng) >> return a
-
--- | Convenience/optimization for popping two values at once, since there are
--- so many functions with arity 2.
-pop2 :: Machine (Integer, Integer)
-pop2 = do
-    (stack, size, rng) <- get
-    case stack of []      -> error "[FATAL] Tried to pop 2 from empty stack!"
-                  [_]     -> error "[FATAL] Tried to pop 2 from stack of one!"
-                  -- The stack is conceptually left-to-right, but physically
-                  -- runs right-to-left so the top of the stack is efficently
-                  -- accessible. Therefore we must reverse the order of a and b
-                  -- so that non-commutative functions like Div receive their
-                  -- arguments in the correct order.
-                  (b:a:s) -> put (s, size-2, rng) >> return (a, b)
+    if size < ar
+    then error $ "[FATAL] Tried to pop " ++ show ar
+              ++ " from stack of size "  ++ show size
+              ++ "!"
+    else let popped = take ar stack
+          in put (drop ar stack, size-ar, rng) >> return popped
 
 -- | Look at top element of stack and return it if it exists. Doesn't modify
 -- stack.
@@ -97,37 +88,37 @@ pushMany = foldr ((>>) . push) $ return ()
 executeFunction :: Function -> Machine Bool
 
 executeFunction Add = do
-    (a, b) <- pop2
+    [a, b] <- popf Add
     push $ a + b
     return True
 
 executeFunction Sub = do
-    (a, b) <- pop2
+    [a, b] <- popf Sub
     push $ a - b
     return True
 
 executeFunction Mul = do
-    (a, b) <- pop2
+    [a, b] <- popf Mul
     push $ a * b
     return True
 
 executeFunction Div = do
-    (a, b) <- pop2
+    [a, b] <- popf Div
     push $ a `div` b
     return True
 
 executeFunction Neg = do
-    a <- pop
+    [a] <- popf Neg
     push $ negate a
     return True
 
 executeFunction Mod = do
-    (a, b) <- pop2
+    [a, b] <- popf Mod
     push $ a `mod` b
     return True
 
 executeFunction Exp = do
-    (base, pow) <- pop2
+    [base, pow] <- popf Exp
     let args = [("base", base), ("pow", pow)]
     if pow < 0
     then throwError $ DomainException Exp args "pow >= 0"
@@ -137,7 +128,7 @@ executeFunction Exp = do
         return True
 
 executeFunction Fact = do
-    n <- pop
+    [n] <- popf Fact
     let args = [("n", n)]
     if n < 0
     then throwError $ DomainException Fact args "n >= 0"
@@ -146,7 +137,7 @@ executeFunction Fact = do
         return True
 
 executeFunction Perm = do
-    (n, k) <- pop2
+    [n, k] <- popf Perm
     let args = [("n", n), ("k", k)]
     if 0 > k || k > n || n <= 0
     then throwError $ DomainException Perm args "0 <= k <= n and n > 0"
@@ -156,7 +147,7 @@ executeFunction Perm = do
         return True
 
 executeFunction Comb = do
-    (n, k) <- pop2
+    [n, k] <- popf Comb
     let args = [("n", n), ("k", k)]
     if 0 > k || k > n || n <= 0
     then throwError $ DomainException Comb args "0 <= k <= n and n > 0"
@@ -170,7 +161,7 @@ executeFunction Comb = do
         return True
 
 executeFunction Dice = do
-    (num, sides) <- pop2
+    [num, sides] <- popf Dice
     let args = [("num", num), ("sides", sides)]
     if num <= 0 || sides <= 0
     then throwError $ DomainException Dice args "num > 0 and sides > 0"
@@ -185,7 +176,7 @@ executeFunction Dice = do
         put (sum results : stack, size+1, retRng)
         return True
 
-executeFunction Pop = pop >> return True
+executeFunction Pop = popf Pop >> return True
 
 executeFunction Cls = do
     rng <- getRng
@@ -193,19 +184,19 @@ executeFunction Cls = do
     return True
 
 executeFunction Exchg = do
-    (a, b) <- pop2
+    [a, b] <- popf Exchg
     push a
     push b
     return True
 
 executeFunction Copy = do
-    a <- pop
+    [a] <- popf Copy
     push a
     push a
     return True
 
 executeFunction Dupe = do
-    (a, b) <- pop2
+    [a, b] <- popf Dupe
     pushMany $ genericReplicate b a
     return True
 
