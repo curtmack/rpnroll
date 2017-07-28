@@ -3,7 +3,7 @@
 
 -- The name of the package.
 name:                rpnroll
-version:             1.0.0.0
+version:             1.0.0.1
 homepage:            https://github.com/curtmack/rpnroll
 license:             GPL-3
 license-file:        LICENSE
