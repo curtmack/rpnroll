@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, QuasiQuotes #-}
+{-# LANGUAGE OverloadedStrings, QuasiQuotes, BangPatterns #-}
 
 module Machine
 ( Stack
@@ -74,7 +74,7 @@ peek = do
 
 -- | Add an integer to the top of the stack.
 push :: Integer -> Machine ()
-push x = do
+push !x = do
     (stack, size, rng) <- get
     put (x:stack, size+1, rng)
 
