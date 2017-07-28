@@ -79,7 +79,11 @@ push x = do
     put (x:stack, size+1, rng)
 
 -- | Add a list of integers to the top of the stack. They are pushed in order,
--- meaning that they will be popped in reverse order.
+-- meaning that they will be popped in reverse order. This is the expected
+-- behavior if you imagine the stack as a left-to-right list with the top of
+-- the stack on the right (as displayed by the 'stack' command), even though
+-- this is actually backwards from the typical display of lists. (We do this
+-- because pushing/popping from the first element of a list is O(1).
 pushMany :: [Integer] -> Machine ()
 pushMany = foldr ((>>) . push) $ return ()
 
