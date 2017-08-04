@@ -123,7 +123,7 @@ executeFunction Mod = do
 
 executeFunction Exp = do
     [base, pow] <- popf Exp
-    let args = [("base", base), ("pow", pow)]
+    let args = zip ["base", "pow"] [base, pow]
     if pow < 0
     then throwError $ DomainException Exp args "pow >= 0"
     else do
@@ -133,7 +133,7 @@ executeFunction Exp = do
 
 executeFunction Fact = do
     [n] <- popf Fact
-    let args = [("n", n)]
+    let args = zip ["n"] [n]
     if n < 0
     then throwError $ DomainException Fact args "n >= 0"
     else do
@@ -142,7 +142,7 @@ executeFunction Fact = do
 
 executeFunction Perm = do
     [n, k] <- popf Perm
-    let args = [("n", n), ("k", k)]
+    let args = zip ["n", "k"] [n, k]
     if 0 > k || k > n || n <= 0
     then throwError $ DomainException Perm args "0 <= k <= n and n > 0"
     else do
@@ -152,7 +152,7 @@ executeFunction Perm = do
 
 executeFunction Comb = do
     [n, k] <- popf Comb
-    let args = [("n", n), ("k", k)]
+    let args = zip ["n", "k"] [n, k]
     if 0 > k || k > n || n <= 0
     then throwError $ DomainException Comb args "0 <= k <= n and n > 0"
     else do
@@ -166,7 +166,7 @@ executeFunction Comb = do
 
 executeFunction Dice = do
     [num, sides] <- popf Dice
-    let args = [("num", num), ("sides", sides)]
+    let args = zip ["num", "sides"] [num, sides]
     if num <= 0 || sides <= 0
     then throwError $ DomainException Dice args "num > 0 and sides > 0"
     else do
