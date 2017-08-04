@@ -62,7 +62,7 @@ popf f = do
               ++ " from stack of size "  ++ show size
               ++ "!"
     else let popped = take ar stack
-          in put (drop ar stack, size-ar, rng) >> return popped
+          in put (drop ar stack, size-ar, rng) >> return (reverse popped)
 
 -- | Look at top element of stack and return it if it exists. Doesn't modify
 -- stack.
@@ -189,8 +189,8 @@ executeFunction Cls = do
 
 executeFunction Exchg = do
     [a, b] <- popf Exchg
-    push a
     push b
+    push a
     return True
 
 executeFunction Copy = do
